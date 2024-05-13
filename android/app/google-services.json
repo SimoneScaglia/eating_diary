@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1094290418752",
+    "project_id": "eating-diary-1945c",
+    "storage_bucket": "eating-diary-1945c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1094290418752:android:5d7e75472712f2c7e143a5",
+        "android_client_info": {
+          "package_name": "com.example.my_app_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq9THU88E7jB5ovbUDqhwjgmXE12zwL8I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
