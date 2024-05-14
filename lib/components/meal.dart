@@ -64,12 +64,15 @@ class Meal extends StatelessWidget {
                       IconButton(
                         onPressed: () async {
                           await showModalBottomSheet(
-                            context: context,
-                            builder: (context) => EditMealScreen(
-                              mealData: MealData(
-                                  id: mealId, mealContent: mealContent, mealQty: mealQty, mealType: mealType),
-                            ),
-                          );
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) => FractionallySizedBox(
+                                heightFactor: 0.8,
+                                child: EditMealScreen(
+                                  mealData: MealData(
+                                      id: mealId, mealContent: mealContent, mealQty: mealQty, mealType: mealType),
+                                ),
+                              ));
                           reloadWidget();
                         },
                         icon: const Icon(Icons.edit),

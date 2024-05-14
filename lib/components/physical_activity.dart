@@ -49,9 +49,13 @@ class PhysicalActivity extends StatelessWidget {
                         onPressed: () async {
                           await showModalBottomSheet(
                             context: context,
-                            builder: (context) => EditPhysActScreen(
-                              id: id,
-                              physicalActivity: physicalActivityDescription,
+                            isScrollControlled: true,
+                            builder: (context) => FractionallySizedBox(
+                              heightFactor: 0.8,
+                              child: EditPhysActScreen(
+                                id: id,
+                                physicalActivity: physicalActivityDescription,
+                              ),
                             ),
                           );
                           reloadWidget();

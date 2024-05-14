@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_app_1/models/diary_data.dart';
 import 'package:my_app_1/models/meal_data.dart';
@@ -37,42 +38,31 @@ class _EditMealScreenState extends State<EditMealScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  (mealContent == "") ? 'Inserisci il pasto' : 'Modifica il pasto',
-                  style: const TextStyle(color: Color(0xff3E4A55), fontSize: 25.0, fontWeight: FontWeight.bold),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await DiaryData().insertOrUpdateMeal(
-                        Utils.db, widget.mealData.id, widget.mealData.mealType.name, mealContent, selectedValue);
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xffE8C9B8),
-                    padding: const EdgeInsets.all(20.0),
-                  ),
-                  child: const Text(
-                    'Salva',
-                    style: TextStyle(color: Color(0xff3E4A55), fontSize: 20.0),
-                  ),
-                ),
-              ],
+            Text(
+              (mealContent == "") ? 'Inserisci il pasto' : 'Modifica il pasto',
+              style: const TextStyle(color: Color(0xff3E4A55), fontSize: 25.0, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16.0),
-            TextField(
-              autofocus: true,
-              maxLines: null,
-              controller: TextEditingController(text: mealContent),
-              decoration: const InputDecoration(
-                hintText: 'Inserisci il pasto',
-                hintStyle: TextStyle(color: Colors.blueGrey),
-                border: OutlineInputBorder(),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              reverse: true,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxHeight: 100.0,
+                ),
+                child: TextField(
+                  autofocus: true,
+                  maxLines: null,
+                  controller: TextEditingController(text: mealContent),
+                  decoration: const InputDecoration(
+                    hintText: 'Inserisci il pasto',
+                    hintStyle: TextStyle(color: Colors.blueGrey),
+                    border: OutlineInputBorder(),
+                  ),
+                  style: const TextStyle(color: Color(0xff3E4A55)),
+                  onChanged: (value) => mealContent = value,
+                ),
               ),
-              style: const TextStyle(color: Color(0xff3E4A55)),
-              onChanged: (value) => mealContent = value,
             ),
             const SizedBox(height: 16.0),
             SegmentedButton<MealTypes>(
@@ -96,6 +86,22 @@ class _EditMealScreenState extends State<EditMealScreen> {
                   selectedValue = newSelection.first;
                 });
               },
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () async {
+                await DiaryData().insertOrUpdateMeal(
+                    Utils.db, widget.mealData.id, widget.mealData.mealType.name, mealContent, selectedValue);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xffE8C9B8),
+                padding: const EdgeInsets.all(20.0),
+              ),
+              child: const Text(
+                'Salva',
+                style: TextStyle(color: Color(0xff3E4A55), fontSize: 20.0),
+              ),
             ),
           ],
         ),
