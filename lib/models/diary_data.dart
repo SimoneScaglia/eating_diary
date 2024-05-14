@@ -90,7 +90,7 @@ class DiaryData {
   Future<List<Map<String, dynamic>>> getMealContentByMealType(Database db, Meals meal) async{
     List<Map<String, dynamic>> mealContents = [];
     await db.transaction((txn) async {
-      mealContents = await txn.rawQuery('SELECT mealContent FROM meal WHERE mealType LIKE ?', [meal.name]);
+      mealContents = await txn.rawQuery('SELECT DISTINCT LOWER(mealContent) AS mealContent FROM meal WHERE mealType LIKE ?', [meal.name]);
     });
     return mealContents;
   }
