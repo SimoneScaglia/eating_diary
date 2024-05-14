@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:my_app_1/models/diary_data.dart';
 import 'package:my_app_1/models/meal_data.dart';
@@ -18,12 +18,23 @@ class EditMealScreen extends StatefulWidget {
 class _EditMealScreenState extends State<EditMealScreen> {
   late String mealContent;
   late MealTypes selectedValue;
+  List<String> options = [];
 
   @override
   void initState() {
     super.initState();
+    _fetchOptions();
     mealContent = widget.mealData.mealContent;
     selectedValue = widget.mealData.mealQty;
+  }
+
+  Future<void> _fetchOptions() async {
+    List<Map<String, dynamic>> response = await DiaryData().getMealContentByMealType(Utils.db, widget.mealData.mealType);
+    setState(() {
+      for(Map<String, dynamic> content in response){
+        options.add(content['mealContent']);
+      }
+    });
   }
 
   @override
@@ -50,9 +61,8 @@ class _EditMealScreenState extends State<EditMealScreen> {
                 constraints: const BoxConstraints(
                   maxHeight: 100.0,
                 ),
-                child: TextField(
+                child: SimpleAutoCompleteTextField(
                   autofocus: true,
-                  maxLines: null,
                   controller: TextEditingController(text: mealContent),
                   decoration: const InputDecoration(
                     hintText: 'Inserisci il pasto',
@@ -60,7 +70,9 @@ class _EditMealScreenState extends State<EditMealScreen> {
                     border: OutlineInputBorder(),
                   ),
                   style: const TextStyle(color: Color(0xff3E4A55)),
-                  onChanged: (value) => mealContent = value,
+                  textChanged: (value) => mealContent = value,
+                  key: GlobalKey(),
+                  suggestions: options,
                 ),
               ),
             ),
