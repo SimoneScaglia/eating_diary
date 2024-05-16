@@ -1,4 +1,3 @@
-import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:my_app_1/models/diary_data.dart';
 import 'package:my_app_1/models/meal_data.dart';
@@ -16,25 +15,42 @@ class EditMealScreen extends StatefulWidget {
 }
 
 class _EditMealScreenState extends State<EditMealScreen> {
-  late String mealContent;
   late MealTypes selectedValue;
   List<String> options = [];
+  List<String> _searchResults = [];
+  TextEditingController _controller = TextEditingController();
+  List<String> mealItems = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchOptions();
-    mealContent = widget.mealData.mealContent;
     selectedValue = widget.mealData.mealQty;
+    mealItems = widget.mealData.mealContent.split('\n');
+    _controller.text = widget.mealData.mealContent;
+    _controller.addListener(_onTextChanged);
   }
 
-  Future<void> _fetchOptions() async {
+  Future<void> _fetchOptions(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults.clear();
+      });
+      return;
+    }
+
     List<Map<String, dynamic>> response = await DiaryData().getMealContentByMealType(Utils.db, widget.mealData.mealType);
     setState(() {
-      for(Map<String, dynamic> content in response){
-        options.add(content['mealContent']);
-      }
+      _searchResults = response
+          .map((content) => content['mealContent'] as String)
+          .where((content) => content.toLowerCase().startsWith(query.toLowerCase()))
+          .toList();
     });
+  }
+
+  void _onTextChanged() {
+    List<String> items = _controller.text.split('\n');
+    String currentItem = items.isNotEmpty ? items.last : '';
+    _fetchOptions(currentItem);
   }
 
   @override
@@ -50,30 +66,54 @@ class _EditMealScreenState extends State<EditMealScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              (mealContent == "") ? 'Inserisci il pasto' : 'Modifica il pasto',
+              (mealItems.isEmpty) ? 'Inserisci il pasto' : 'Modifica il pasto',
               style: const TextStyle(color: Color(0xff3E4A55), fontSize: 25.0, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16.0),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              reverse: true,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxHeight: 100.0,
-                ),
-                child: SimpleAutoCompleteTextField(
-                  autofocus: true,
-                  controller: TextEditingController(text: mealContent),
-                  decoration: const InputDecoration(
-                    hintText: 'Inserisci il pasto',
-                    hintStyle: TextStyle(color: Colors.blueGrey),
-                    border: OutlineInputBorder(),
-                  ),
-                  style: const TextStyle(color: Color(0xff3E4A55)),
-                  textChanged: (value) => mealContent = value,
-                  key: GlobalKey(),
-                  suggestions: options,
-                ),
+            TextField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                hintText: 'Inserisci il pasto',
+                hintStyle: TextStyle(color: Colors.blueGrey),
+                border: OutlineInputBorder(),
+              ),
+              style: const TextStyle(color: Color(0xff3E4A55)),
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+              onChanged: (text) {
+                setState(() {
+                  mealItems = text.split('\n');
+                });
+                _onTextChanged(); // Fetch options whenever the text changes
+              },
+            ),
+            const SizedBox(height: 8.0),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _searchResults.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 4.0),
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      side: BorderSide(color: Colors.blueGrey, width: 1.0),
+                    ),
+                    child: ListTile(
+                      title: Text(_searchResults[index]),
+                      onTap: () {
+                        setState(() {
+                          List<String> items = _controller.text.split('\n');
+                          items[items.length - 1] = _searchResults[index];
+                          _controller.text = items.join('\n');
+                          _controller.selection = TextSelection.fromPosition(
+                              TextPosition(offset: _controller.text.length));
+                          _searchResults.clear();
+                        });
+                      },
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16.0),
@@ -102,8 +142,13 @@ class _EditMealScreenState extends State<EditMealScreen> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () async {
-                await DiaryData().insertOrUpdateMeal(
-                    Utils.db, widget.mealData.id, widget.mealData.mealType.name, mealContent, selectedValue);
+                // Handle each meal item separately
+                for (String mealItem in mealItems) {
+                  if (mealItem.trim().isNotEmpty) {
+                    await DiaryData().insertOrUpdateMeal(
+                        Utils.db, widget.mealData.id, widget.mealData.mealType.name, mealItem, selectedValue);
+                  }
+                }
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
